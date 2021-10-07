@@ -62,8 +62,8 @@ _msvloop:
     di
     lcd_WaitVRAM
     pop     af
-    ;ld      [hl+],a
-    db $22
+    ld      [hl+],a
+    ;db $22
     ei
 _msvskip:
 	dec	c
@@ -87,8 +87,8 @@ mem_CopyVRAM:
 _mcvloop:
    di
     lcd_WaitVRAM
-    ;ld      a,[hl+]
-    db $2a
+    ld      a,[hl+]
+    ;db $2a
 	ld	[de],a
     ei
 	inc	de

@@ -1,0 +1,102 @@
+
+;;;;;;;;;;;;;;;;;;;;
+; HELPER ROUTINES
+;;;;;;;;;;;;;;;;;;;;
+IF      !DEF(MEMORY1_ASM)
+MEMORY1_ASM  SET  1
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Turn off LCD
+;; and wait for confirmation
+LCD_Off:
+    ld a,[rLCDC]    ; register LCD c
+    rlca            ; roll a left, b7>c
+    ret nc          ; ret if c off
+_lcdofflp:
+    ld a,[rLY]      ; ff44, lcd y
+    cp 145          ; at bottom?
+    jr nz, _lcdofflp ; wait
+    ld a,[rLCDC]    ; load lcd reg
+    res 7,a         ; reset bit 7 [enabled bit] in a to 0
+    ld [rLCDC],a    ; return a to rLCDC
+    ret
+
+
+;*************************************
+;* mem_Copy - "Copy" a memory region
+;*
+;* input:
+;*   hl - pSource
+;*   de - pDest
+;*   bc - bytecount
+;*************************************
+mem_Copy:
+	inc	b
+	inc	c
+	jr	_mcskip
+_mcloop:
+	db $2a ;ld	a,[hl+]
+	ld	[de],a
+	inc	de
+_mcskip:
+	dec	c
+	jr	nz,_mcloop
+	dec	b
+	jr	nz,_mcloop
+	ret
+
+;********************************************
+;* mem_SetVRAM - "Set" a memory region in VRAM
+;*
+;* input:
+;*    a - value
+;*   hl - pMem
+;*   bc - bytecount
+;*******************************************
+mem_SetVRAM:
+	inc	b
+	inc	c
+	jr	_msvskip
+_msvloop:
+    push    af
+    di
+    lcd_WaitVRAM
+    pop     af
+    ;ld      [hl+],a
+    db $22
+    ei
+_msvskip:
+	dec	c
+	jr	nz,_msvloop
+	dec	b
+	jr	nz,_msvloop
+	ret
+
+;*************************************
+;* mem_CopyVRAM - "Copy" a memory region to or from VRAM
+;*
+;* input:
+;*   hl - pSource
+;*   de - pDest
+;*   bc - bytecount
+;**************************************
+mem_CopyVRAM:
+	inc	b
+	inc	c
+	jr	_mcvskip
+_mcvloop:
+   di
+    lcd_WaitVRAM
+    ;ld      a,[hl+]
+    db $2a
+	ld	[de],a
+    ei
+	inc	de
+_mcvskip:
+	dec	c
+	jr	nz,_mcvloop
+	dec	b
+	jr	nz,_mcvloop
+	ret
+
+ENDC 

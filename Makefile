@@ -1,16 +1,17 @@
+RGBDS_PATH:=~/Projects/rgbds
+PROJECT:=projects/hw
+
 default:
-	# remove macros
-	python3 tools/macroize.py m_gb_rom_header.z80 > output.z80
 	# compile 
-	~/Projects/rgbds/rgbasm output.z80 -o ./rom.rgb
+	$(RGBDS_PATH)/rgbasm -ilib $(PROJECT)/main.z80 -o ./rom.rgb
 	# link 
-	~/Projects/rgbds/rgblink ./rom.rgb -o ./rom.gb
+	$(RGBDS_PATH)/rgblink ./rom.rgb -o ./rom.gb
 	# clean 
-	rm -rf output.z80 rom.rgb 
+	rm -rf rom.rgb 
 
 run:
 	sameboy ./rom.gb
 
 clean:
-	rm -rf rom.gb rom.lst output.z80
+	rm -rf rom.gb 
 	

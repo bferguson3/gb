@@ -1,0 +1,67 @@
+
+include "hardware.inc"
+
+include "romheader.z80"
+
+
+;; INTERRUPT HANDLERS:
+SECTION "interrupts", ROM0[$0150]
+
+irq_draw:
+irq_stat:
+irq_timer:
+irq_serial:
+irq_joypad:
+    reti
+
+include "macros.inc"
+
+include "system.z80"
+
+
+;; MAIN CODE
+SECTION "main code", ROM0
+
+START:
+    nop
+    di
+    ld sp, $ffff
+    ;jp initialize
+
+initialize:
+    ; set 4-color plaette
+    ;ld a, %11 10 01 00 ; 3=w 2=dg 1=lg 0=blk
+    ld a, %00100111 
+    ld [rBGP], a
+    ld [rOBP1], a
+    ; for sprite, this makes black [color 0] transparent
+    ld a, %11100100  ; invert transparency
+    ld [rOBP0],a ; sprite palette same
+    ; viewport to 0,0
+    ld a, 0
+    ld [rSCX], a
+    ld [rSCY], a
+
+    call LCD_Off    ; disable LCD to write to _VRAM
+    ; copy tileset to vram
+    ;ld hl, TileChar
+    ;ld de, _VRAM
+    ;ld bc, EndTileChar-TileChar           ;16 bytes per 1 char, 2 chars.
+    ;call mem_Copy
+
+    ; turn back on LCD
+    ;ld a, LCDCF_ON|LCDCF_BG8800|LCDCF_BG9800|LCDCF_BGON|LCDCF_OBJ8|LCDCF_OBJON
+    ; LCD on, window @9800, window off, bgtiles @8800, bg %1, 8x8, solidwinclr, BG on
+    ld a, %11000011
+    ld [rLCDC], a
+
+    xor a 
+    ld [$ff4a],a 
+    ld [$ff4b],a 
+
+    
+LOOP:
+    lcd_WaitVRAM
+    wait_lcdline 144
+    JP LOOP 
+
